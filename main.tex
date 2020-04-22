@@ -89,29 +89,78 @@ separating between traffic and background areas, cargo-bike measurements.
 \hline \\[-1.8ex] 
 Rank & XGBoost & Random Forest \\ 
 \hline \\[-1.8ex] 
-1 & pop3k & road\_class\_M345\_3000 \\ 
-2 & road\_class\_M345\_3000 & pop3k \\ 
-3 & road\_class\_2\_25 & road\_class\_M345\_5000 \\ 
-4 & road\_class\_M345\_5000 & road\_class\_2\_50 \\ 
-5 & temperature\_2m\_6 & road\_class\_2\_25 \\ 
+1 & pop3k & pop3k \\ 
+2 & road\_class\_2\_25 & road\_class\_M345\_3000 \\ 
+3 & road\_class\_M345\_3000 & road\_class\_M345\_5000 \\ 
+4 & road\_class\_M345\_5000 & road\_class\_2\_25 \\ 
+5 & road\_class\_2\_50 & road\_class\_2\_50 \\ 
 6 & road\_class\_1\_5000 & pop5k \\ 
-7 & road\_class\_2\_50 & road\_class\_2\_100 \\ 
-8 & wind\_speed\_10m\_6 & elevation \\ 
-9 & road\_class\_M345\_50 & pop1k \\ 
-10 & wind\_speed\_10m\_10 & temperature\_2m\_6 \\ 
-11 & elevation & road\_class\_1\_5000 \\ 
-12 & road\_class\_M345\_300 & wind\_speed\_10m\_6 \\ 
-13 & pop1k & wind\_speed\_10m\_2 \\ 
-14 & wind\_speed\_10m\_4 & wind\_speed\_10m\_10 \\ 
-15 & pop5k & wind\_speed\_10m\_4 \\ 
-16 & road\_class\_2\_100 & wind\_speed\_10m\_8 \\ 
-17 & road\_class\_M345\_100 & road\_class\_M345\_1000 \\ 
-18 & trop\_mean\_filt & trop\_mean\_filt \\ 
-19 & road\_class\_M345\_25 & road\_class\_M345\_100 \\ 
-20 & wind\_speed\_10m\_2 & road\_class\_M345\_800 \\ 
+7 & temperature\_2m\_6 & road\_class\_2\_100 \\ 
+8 & wind\_speed\_10m\_9 & elevation \\ 
+9 & wind\_speed\_10m\_4 & pop1k \\ 
+10 & road\_class\_M345\_50 & wind\_speed\_10m\_9 \\ 
+11 & road\_class\_M345\_100 & road\_class\_1\_5000 \\ 
+12 & pop1k & temperature\_2m\_6 \\ 
+13 & road\_class\_M345\_300 & wind\_speed\_10m\_10 \\ 
+14 & road\_class\_M345\_25 & wind\_speed\_10m\_4 \\ 
+15 & elevation & road\_class\_M345\_100 \\ 
+16 & wind\_speed\_10m\_10 & wind\_speed\_10m\_6 \\ 
+17 & trop\_mean\_filt & trop\_mean\_filt \\ 
+18 & pop5k & road\_class\_M345\_300 \\ 
+19 & temperature\_2m\_5 & wind\_speed\_10m\_2 \\ 
+20 & road\_class\_1\_1000 & wind\_speed\_10m\_8 \\ 
 \hline \\[-1.8ex] 
 \end{tabular} 
 \end{table} 
+
+\begin{table}[!htbp] \centering 
+  \caption{cross validation results of the NLDE-XGB, NLDE-RF, NLDE-Lasso models, $\mu g/m^3$} 
+    \label{nlde_vimp} 
+\begin{tabular}{@{\extracolsep{5pt}} cccccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ 
+&RMSE & RRMSE & IQR & rIQR & MAE & rMAE & rsq \\\hline \\[-1.8ex] 
+ 
+XGB	&7.36 	& 0.36 &	6.54 &	0.37 &	5.09& 	0.25 &	0.71\\
+RF	&7.36	& 0.36 &	6.42 &	0.36 &	5.04&	0.25 &	0.70 \\
+Lasso &	8.51 &	0.42 & 8.67	& 0.49	&6.20 &	0.31	&0.61\\
+\hline \\[-1.8ex] 
+\end{tabular} 
+\end{table} 
+
+\begin{figure}[h!]
+    \includegraphics[width=\linewidth]{w1-1.pdf}
+    \label{accuracy}
+    \caption { Accuracy assessed for NLDE-XGB, NLDE-RF, NLDE-Lasso.}
+  \end{figure}
+  
+\begin{figure}[h!]
+    \includegraphics[width=\linewidth]{NLDE.png}
+    \label{nldepred}
+    \caption {predictions from NLDE-XGB, NLDE-RF, NLDE-Lasso.}
+\end{figure}
+
+\subsection{Compare with bakfiets measurements}
+
+
+
+\begin{figure}[h!]
+    \includegraphics [scale = 0.3 ]{NLDE_vs_bak.png}
+    \label{nldevsbak}
+    \caption { The differences between NLDE model predictions and cargo-bike measurements, the values are the subtraction of cargo-bike measurements from NLDE model predictions (model prediction - bike measurements), in ug/m3.}
+\end{figure}
+\subsection{Validation with Cargo-bike measurements}
+%pearson correlation coefficient`
+ %         xgbnij    rfmnij    Lamnij
+%xgbnij 1.0000000 0.7956444 0.7786702
+%rfmnij 0.7956444 1.0000000 0.9287154
+%Lamnij 0.7786702 0.9287154 1.0000000
+
+%mean
+%  xgbnij   rfmnij   Lamnij 
+%32.99156 20.67016 21.43969 
+
 \subsection{Global model predictions}
 The mean of xgboost, random forest, and Lasso predictions over the area of Nijmegen (called predictions) are respectively 25.77, 22.38, and 26.54 ug/m3. The Nijmegen predictions are shown in figure X. From the figures, the xgboost and random forest predictions reveal more details, they also obtained a higher prediction accuracy (see the global paper) compared to Lasso. Comparing the figure X with the predictors (supplement figure SF2), it can be observed that the predictions reveal primary road patterns. The paired Pearson correlation between three Nijmegen predictions in are: 0.8 for random forest vs. Lasso, 0.81 for random forest vs. xgboost, and 0.94 for Lasso vs. random forest.
 \begin{figure}[h!]
@@ -132,7 +181,7 @@ Figure X shows averaged cargo-bike measurements and scaled global model predicti
 \begin{figure}[h!]
     \includegraphics[width=\linewidth]{f4a.png}
     \label{Graafseweg}
-    \caption {scale the cargo-bike using the Graafseweg station. The differences between scaled global model predictions and cargo-bike meausrements, the values are the subtraction of cargo-bike measurements from global model predictions ( e.g. rf-pred - bike-vag), in ug/m3.}
+    \caption {scale the cargo-bike using the Graafseweg station. The differences between scaled global model predictions and cargo-bike meausrements, the values are the subtraction of cargo-bike measurements from global model predictions (model prediction - bike measurements), in ug/m3.}
 \end{figure}
 \begin{figure}[h!]
     \includegraphics[width=\linewidth]{f4b.png}
