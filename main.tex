@@ -1,87 +1,106 @@
 \documentclass{article}
+\usepackage[round]{natbib}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{authblk}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{lineno}
+\usepackage{float}
+\usepackage{cleveref}
+\usepackage{tabularx,ragged2e}
+\usepackage{url}
+
+
 \newcommand{\source}[1]{\hfill Source: {#1}} %command definition for sources in figures
 
-
-\title{Evaluating global air pollution models using air quality sensors onboard a carrier bicycle in the Netherlands}
+\title{Evaluating statistical Nitrogen Dioxide models using air quality sensors on board a carrier bicycle}
 \author{Meng Lu et al. }
-\date{March 2020}
+\date{\today}
 
 \begin{document}
 
 \maketitle
 
 \section{Introduction}
-Chronic exposure to air pollution poses a threat to public health. World Health Organization estimated that air pollution has contributed to 7 million deaths in 2016 [1]. From a medical perspective, common air pollutants such as particle matters and nitrogen oxides (NO$_2$) damage the cardiovascular and respiratory systems [3-4]. Air pollution mapping is crucial for interventions to abate exposures. Multiple factors influence the concentration of air pollution. In the Netherlands, specifically, road traffic produces most NO$_2$ pollution [8]. Emissions from traffic can be direct and indirect. Atmospheric NO$_2$ is mostly an indirect secondary emission as an oxidation result of emitted NO, while the direct primary emission as NO$_2$ is minor [9]. Apart from traffic conditions, topography and tropospheric processes both can also contribute to NO$_2$.
-\par
-Extensive research has mapped air pollution concentration using ground monitor station observations, satellite measurements, and ancillary NO$_2$ data (commonly called predictors, including all the variables relating to the emitting and dispersing processes of NO$_2$ such as climate, land cover, traffic network)[13,14,15]. Ground monitors can be routinely run or are project-oriented, which requires extra cost, mainly when other attributes such as temperature and wind direction are recorded [16]. Recent studies show a rise in low-cost ground sensors [17, 18, 19], but their study-specific conditions constrain generalization for larger areas. As for satellites, their coverage range is more extensive than regional monitor networks at a higher cost [16]. The target is different for ground monitors and satellites: the satellite records the column from the ground to the stratosphere, while the ground monitor takes the near-surface concentration, which is more relevant to human health [16]. This discrepancy may cause different results for exposure measurement given the same study area. 
-\par
-Based on the measurement input, air pollution mapping methods has three major genres, which can be combined in some cases. The first genre, named interpolation, derives spatially continuous pollution concentration levels from point records. Typical approaches include Kriging and the Inverse weighted distance method [20, 21]. The second genre, the dispersion model, focuses on the atmospheric process of pollutants. It takes into account the dynamics of mass transport, turbulence, and chemical transformation [22]. The third genre, called Land Use Regression models is in use widely in epidemiological studies to calculate pollution map for exposure assessment [23]. This approach assumes that the air pollution level relates to geographic attributes. Frequent empirical attributes concern population, traffic, land cover, transportation accessibility [16]. 
-\par
-To map air pollution globally, regression-based methods and machine learning algorithms are in use widely. They gain prediction power from unique calculation processes, and in practise they can combine the aforementioned three genres to some degree.
-\par
-Several studies compared regression-based and machine learning models to map air pollution to pinpoint their strengths and constraints. \cite{chen2019comparison, kerckhoffs2019performance, adam2014spatiotemporal, DEHOOGH2014382} compared different geostatistical-based, linear regression-based and machine learning-based techniques in air pollution mapping. \cite{chen2019comparison, kerckhoffs2019performance} both found similar cross-validation accuracy between machine learning-based techniques, as well as between ensemble tree-based techniques and regularized linear regression. Therefore, they concluded there is no difference in performance between these methods, but neither \cite{chen2019comparison} or\cite{kerckhoffs2019performance} show spatial prediction patterns of the different models. The question is: do the similar prediction accuracy obtained from different models indicate the same performance? In the global NO$_2$ modeling study of Lu2020, it is found that various ensemble tree-based methods obtained almost the same cross-validation accuracy can predicted very different spatial patterns. This calls for a re-evaluation of different ensemble tree-based methods using additional ground validation data to further understand different models and to imply a validation method that accounts for spatial prediction patterns. 
+Chronic exposure to air pollution poses a threat to public health. World Health Organisation estimated that air pollution has contributed to 7 million deaths in 2016\citep{world2018burden}. From a medical perspective, common air pollutants such as particulate matters and nitrogen oxides (NO$_2$) damage the cardiovascular and respiratory systems \citep{anderson2012clearing, pascal2009effets}.  In the Netherlands, the NO2 concentration limit set in 2017 was exceeded for several times in places with busy traffic\citep{no2}. Emissions from traffic can be direct and indirect. Atmospheric NO$_2$ is mostly traffic-related as an indirect secondary emission of an oxidation result of emitted NO, while the direct primary emission as NO$_2$ is minor \citep{ukno2,no2}. Quantifying NO$_2$ is crucial for interventions to abate exposures.
 
-\par
-In this study, we address this pressing need  We used a mobile air quality station on board a cargo bike to monitor selected air pollutants (called “cargo-bike”). The bicycle covered a selected area close to the routes followed by the Four Days Marches in Nijmingen, the Netherlands.  From July 16 to 19, 2019. The cargo-bike measures NO$_2$ twice a day, with the same route taken for all the measurements.  
 
-\par
-The goal of this study is to re-evaluate various linear regression and machine learning-based air pollution models, particularly regularized regression, Lasso, and emsemble tree-based methods: Random Forest (RF) and XGBoost (XGB). In addition, despite the temporal mismatch, we compared the global air pollution model, which is made for 2017 and available for the daytime  (7 am – 10 pm local time), with the cargo-bike measurements to understand the amount of spatial variability that an annual global model could explain at the local time.  
+ Ground monitoring stations of NO$_2$ can be routinely run or are project-oriented, which requires extra cost, mainly when other attributes such as temperature and wind direction are recorded \citep{hoek2008review}. Apart from satellites and ground monitors, recent studies show a rise in urban low-cost ground sensors \citep{spinelle2015field, schneider2017mapping,isiugo2018assessing}. It can provide additional information to satellite and regular ground monitors in its fine spatial-temporal resolution. Meanwhile, the deficits of low-cost sensors are noted as well. Measurements from low cost sensors are subject to sensor drift and interference effects. Sensor drift denotes the growing bias of sensor response due to the ageing electronic-chemical cells; Interference effects generalises the sensor's response to other pollutants, gases, temperature and relative humidity, which hampers the measurement to the target pollutant \citep{van2019calibration}. For instance, an application of low-cost sensors in the Netherlands carried in Amsterdam showed a significant signal drift for two months of observation, while its calibration with temperature and relative humidity improve its fit with ground stations \citep{mijling2018field}. 
+ 
+The mapping methods include dispersion models \citep{holmes2006review,health2010traffic}, statistical models \citep{chen2019comparison}, or hybrid models \citep{molter2010modelling,marshall2008within,beelen2010comparison,dijkema2010comparison, akita2014large}. Dispersion models simulate the emission, transforming, transportation, and deposition of atmospheric particles, but require detailed emission inventory data and are computationally intensive, scaling a dispersion model can be at a cost of computational intractability and low prediction accuracy. Statistical models aim at finding relationships between ground monitor station observations, satellite measurements, and ancillary NO$_2$ data (called geospatial predictors \citep{rivera2013nitrogen, park2017individual,kharol2015assessment, isiugo2018assessing, chen2019comparison,luglobal}. The geospatial predictors are variables that relate to the emission sources (e.g. transport network) and dispersion processes (e.g. meteorological data) of the pollutants \citep{briggs2000regression}, which has been used to predict high-resolution NO$_2$ at various spatial scales \citep{Hoek2008,larkin2017global}, is the focus of this study.  Recently, mapping temporally resolved, long-term NO$_2$ climate, e.g. NO$_2$ of each hour of a day aggregated over multiple years \citep{lu2020land}, has been shown to be necessary for accounting human space-time activities in exposure assessment \citep{lu2019}. However, the cross-validation are all made through comparison with ground station measurements, which do not contribute to our understanding of the spatial patterns of the LUR model predictions. Therefore, external spatially continuous ground validation data are necessary to understand the level of spatiotemporal details a statistical model could reveal. 
 
-\section{Data and Methods}
+A spatially continuous ground validation dataset is also essential for an in-depth comparison and evaluation between different statistical models. A wide array of models have been developed using each or a combination of data model \cite{briggs2000regression} or machine learning models \citep{kees2020satelliteML}. Several studies compared the cross-validation accuracy of various statistical models, including standard and regularised linear regression, ensemble tree-based models, transformation-based (e.g. support vector machine), artificial neural networks, in high-resolution NO$_2$ mapping \citep{chen2019comparison, kerckhoffs2019performance, luglobal}. Both \cite{kerckhoffs2019performance} modelling UFP (Ultra Fine Particles) and \cite{chen2019comparison} modelling NO$_2$ of several European countries obtained similar cross-validation accuracy across various ensemble tree-based and linear regression models. Based on the cross-validation accuracy comparison result, \cite{chen2019comparison} and \cite{kerckhoffs2019performance} concluded on the similar performance of different statistical algorithms in modeling the spatial variation. However, neither of these two studies showed or analysed the prediction patterns. In the global NO$_2$ modeling study of \cite{luglobal}, it is found that various ensemble tree-based methods obtained almost the same cross-validation accuracy can give very different prediction patterns.  
+%to what extent can the cross-validation prediction accuracy indicate the spatial variation modelled? 
+
+The goal of this study is to collect such spatially continuous ground validation dataset to understand the amount of spatial variation that could be captured in current statistical NO$_2$ models and further compare data model-based and machine learning-based models. We monitor NO$_2$ concentrations by installing a mobile air quality station on-board a cargo-bike to evaluate temporally resolved NO$_2$ models based on different statistical algorithms. Specifically, we focused on comparing three methods, Lasso\citep{lasso}, Random Forest \citep[RF,][]{breiman2001random}, and extreme gradient boosting \citep[XGBoost, XGB,][]{xgboost}. These methods are selected as they are representative to the most recent spatial prediction techniques used in NO$_2$ mapping, with Lasso and Random Forest compared in \cite{chen2019comparison, kerckhoffs2019performance, luglobal}. The implications can be generalised to comparing other statistical methods.   %and to imply a validation method that accounts for spatial prediction patterns.  
+
+The cargo-bike covered a selected route shown in \cref{route}, in Nijmegen, the Netherlands, from July 16 to 19, 2019. The total route length is 29 km. The cargo-bike measures NO$_2$ every morning from 8 am to 11 am, the route is repeated daily during the event. We compared the Lasso, RF, and XGB models of the corresponding hours with the cargo-bike measurements to understand the amount of spatial variability a statistical model could capture, and to compare different models beyond cross-validation accuracy of the models.  
+
+\section{Data}
+
 \subsection{Cargo-bike measurements}
-The cargo-bike and the instruments onboard weights 160 kg. It carries a 150 WP solar panel and can work 3 – 5 hours continuously.  Due to the weather, the measurements in the afternoon have severe deficiencies and are therefore not used in this study. In the morning, the measurements are taken from 8 - 11am. 
-[detailed description to be added by TNO].
-The cargo-bike measurements averaged over the four days have the mean of 11.21 ug/m3. 
-\begin{figure}
+The cargo-bike and the instruments on board weights 160 kg. It carries a 150 WP solar panel and can work 3 – 5 hours continuously. [detailed description to be added]. 
+The cargo-bike sensored NO$_2$ averaged over the four days have the mean of 11.21 $\mu g/m^3$. 
+
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{f1a.jpg}
     \label{bike}
-    \caption {bikefits}
+    \caption {The cargo-bike and instruments that are used to sensor the NO$_2$ in our study.}
 \end{figure}
+
 \begin{figure}
     \includegraphics[width=\linewidth]{f1b.jpg}
     \label{route}
-    \caption {routes taken by the cargo-bike on openstreetmap[cite]. “A” indicates the starting point.The point numbers indicated on the map are used to indicate the routes. For example route from point 1 to point 2, which is called route 1-2 in this study.}
+    \caption {Routes taken by the cargo-bike on openstreetmap\citep{openstreetmap}.}
 \end{figure}
+%“A” indicates the starting point.The point numbers indicated on the map are used to indicate the routes. For example route from point 1 to point 2, which is called route 1-2 in this study.
+
+\subsection{Ground monitor stations}
+
+In the Netherlands (41,543 $km^2$), 77 ground stations are established and are managed by the National Institute for Public Health and the Environment \citep[RIVM,][]{RIVMLML}. We further incorporated the ground monitor network from Germany (338 stations 357.386 $km^2$) to better identify NO$_2$-predictors relationships using machine learning models. The ground monitoring stations (all together 415) data are from European Environment Agency (cite) for the Netherlands and the Umwelt Bundesamt (cite) for Germany. Stations with inadequate data such as missing value at certain hours are neglected. The measurements are downloaded the same days as the cargo-bike measurements and from 7:00 am - 11:59 am. This dataset is called NLDE.
+
+In Nijmegen, where the cargo-bike took the measurements, there are two ground stations established, one is the Nijmegen-Graafseweg station (called Graafseweg station, Latitude: 51.941372, Longitude 5.857777), monitors air pollution from traffic. The other is Nijmegen-Ruyterstraat station (called Ruyterstraat station, Latitude: 51.838221, Longitude: 5. 856938), monitors background pollution. The stations are also managed by RIVM. Over the same period of the cargo-bike measurements, the Graafseweg station measured NO$_2$ concentration has a mean of 23.25 $\mu g/m^3$ and the Ruyterstraat station 14.03 $\mu g/m^3$.
+ 
+
+\subsection{Geospatial predictors}
+ The geospatial predictors were calculated at 25 m resolution. They are either spatial attributes aggregated within a circular ring centred at each sensor or prediction location, called buffered predictors, or values of the spatial attribute at the observation or prediction location, called gridded variables. The buffered predictors include industry areas, roads, and population. Gridded variables include wind speed, temperature, elevation, and satellite products consist of TROPOMI measurements from 2018-02 to 2019-01, OMI measurements of 2017, and a GEOS-CHEM \citep{bey2001global,GEOS-CHEM} annual NO$_2$ surface concentration product \citep{geddes2016long} of 2013. The buffered predictors of road and industry are calculated from OpenStreetMaps \citep{openstreetmap}. For detailed descriptions of the sources of geospatial predictors and how they are calculated please refer to \cite{luglobal}.   
+  
+\section{Methods}
+The NEDL data are aggregated in two ways, one is the mean of all hours and days, called NEDL-avg dataset, and the other the mean of each hour of the days corresponding to the time of cargo-bike measurements, called NEDL-hr dataset. The data exploration and XGB and RF hyperparameter optimisation are based on NEDL-avg. NEDL-hr is mainly used in the modelling process. 
+
+\subsection{Spatial stationarity and dependency}
+We used GWR (Geographically Weighted Regression) to explore local variability of the NLDE dataset (supplement). Variograms with various cut-offs are used to inspect spatial correlations (supplement). No significant location variability is found from errors, weights, and R$^2$ of GWR. This ensures adding ground stations from Germany will not contribute negatively to the model. We also found no spatial correlation among the station measurements, therefore, we treat observations from each ground station as independent in our modelling and cross-validation process. 
+
+\subsection{Random Forest, Extreme Gradient Boosting, Lasso}
+
+Lasso is a linear regression algorithm that uses an L1 norm to shrink variable coefficients to zero to lower model variance. RF and XGB are ensemble tree-based methods, which mitigate two negative effects of a single tree model: instability and coarse separation. Large trees subject to instability, while small trees are inaccurate for their piece-wise constant approximations. Bagging overcomes these two constraints by using small trees to add stability and avoid coarse approximation by averaging over small trees \citep{friedman2001greedy}. RF is based on Bagging, which grows trees independently while XGB is based on gradient boosting, which grow trees subsequently. RF extends from bagging by choosing the variable to split from a subset a number of variables. XGB is a scalable gradient boosting algorithm. Improving from the boosting machine framework \cite{friedman2002stochastic}, xgboost enables multiple ways of penalising model complexity to control model over-fitting, including regularisation on tree width and terminal node values, as well as dropping trees.  
 
 
-\subsection{Ground monitor stations in Netherlands and Germany}
 
-Since the Netherlands (41,543 $km^2$) contains only 77 stations, we also incorporated the ground monitor network from Germany (357.386 $km^2$) to study if the strength can be borrowed to improve the modelling accuracy. The ground monitoring stations data are from European Environment Agency (cite) for the Netherlands and the Umwelt Bundesamt (cite) for Germany. Stations with inadequate data such as  missing value at certain hours are neglected. The measurements of the same time span as the Cargo-bike measurements are used.  
-
-
-\subsection{Ground monitor stations in Nijmingen}
-the ground measurements are gathered from two LML stations, one is the Nijmegen-Graafseweg station (called Graafseweg station, Latitude: 51.941372, Longitude 5.857777). The other is Nijmegen-Ruyterstraat station (called Ruyterstraat station, Latitude: 51.838221, Longitude: 5. 856938). The station is managed by RIVM to monitor air pollution from local traffic. The measurements averaged over the same periods of cargo-bike is 23.25 ug/m3 at Graafseweg and 14.03 ug/m3 at Ruyterstraat.
-\par
-The openaq data is used for the global model predictions (see Lu et al. 2020). Three methods are evaluated in this study, namely xgboost, random forest, and Lasso. 
-
-
-
-\par
-%We used all the ground monitoring stations in the airbase[cite] for the whole Europe and evaluate the models at 3 scales: 1) Europe-wide (using all the ground station measurements), 2) Netherlands and its neighbouring countries, Germany, France, Belgium, 3) Netherlands. 
-\par
-We firstly use geographically weighted regression to explore local stationaries, and compare three types of spatial prediction methods: 1) Gaussian process, which include Kriging and cokriging, 2) regression- based, which include Lasso and ElasticNet, and 3) machine learning based, which include random forest and xgboost. These methods are selected as they are representative to the current spatial prediction techniques.  
-
-
-\subsection{Global NO$_2$ models}
-Based on hyperparameter setting recommendations provided by Lu et al (2020) We used 1000 trees for all the methods. The maximum tree depth for xgboost is set to 6 and learning rate set to 0.02. Other settings are the same as Lu et al (2020). As the global model predictions are for entire year, we scale them to the same timespan as the cargo-bike measurements by multiplying the predictions to the ratio between the global model prediction and the LML measurements averaged over the timespan of the cargo-bike measurements (July 16 -19, 8 am - 11 am), which means after scaling, the mean of the xgboost, random forest, and Lasso predictions are also 23.25 ug/m3 if scaled using the Graafseweg station and 14.03 if scaled using the Ruyterstraat station.   
-
+\subsection{RF and XGB hyperparameter optimization}
+The NLDE-avg dataset is used for hyperparameter optimisation, through grid search, with 5-fold cross-validation. For XGB, the learning rate (eta), number of iterations (rounds), maximum tree depth (max.tree.depth) and gamma are tuned, each time 70\% of data is drawn from the training set. The search grid for the number of iterations (rounds) was from 200 to 3000, with a step of 200; maximum tree depth (max-depth) from 3 to 6 with a step of 1, learning rate (eta) from 0.001 to 0.1 with a step of 0.05, the penalty term gamma \citep{xgboost} from 1 to 5 with a step of 1. The 5-fold cross-validation result indicate the optimal hyperparameters to be eta = 0.05, rounds = 200, max-depth = 3, gamma = 1. For random forest, the minimum number of trees on the end nodes (min.node.size), and  number of variables that are randomly draw for each tree (mtry) are optimized. According to the 5-fold cross-validation result, the optimal setting is min.node.size equals 5 and mtry equals 12, the number of trees is set to 1000 for random forest, which is a safe choice as the high number of trees will not negatively affect model performance.
 
 \subsection{Separating between background and traffic areas}
-To validate the predictions close to roads and faraway from roads, we made two groups. If the location is within 500 m distance away from the primary roads, they are grouped into traffic areas, if the location is farther away from the primary roads, they are grouped into background areas. Figure X shows the cargo-bike routes that are in traffic areas and background areas. 
+We separate the predictions and cargo-bike measurements close to roads and far-away from roads. If the location is within 500 m distance away from the primary roads, they are grouped into traffic areas, if the location is farther away from the primary roads, they are grouped into background areas. \Cref{seperate} shows the cargo-bike routes that are in traffic areas and background areas. 
 separating between traffic and background areas, cargo-bike measurements.
-\begin{figure}
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{f2.png}
     \label{seperate}
     \caption {separating between traffic and background areas, cargo-bike measurements.}
 \end{figure}
 
+%%%%%%%%%%% 
+% Results %
+%%%%%%%%%%% 
 
 \section{Result}
-\subsection{Variable importance}
+\subsection{Models trained on NLDE-avg}
+\Cref{nlde_vimp} compares the variable importance obtained by the RF and XGB models trained on the NLDE-avg dataset. The top five ranked variables are the same, including the emission related variables primary road length within 25 and 50 m buffers. This indicates the maps can capture spatial variability at 25 m resolution. Compared to RF, it seems the XGB favours more emission related local road variables. 
 
-\begin{table}[!htbp] \centering 
+
+\begin{table}[H] \centering 
   \caption{Ranking of the top 20 important variables of XGBoost and Random Forest, for the local model} 
     \label{nlde_vimp} 
 \begin{tabular}{@{\extracolsep{5pt}} ccc} 
@@ -113,8 +132,8 @@ Rank & XGBoost & Random Forest \\
 \end{tabular} 
 \end{table} 
 
-\begin{table}[!htbp] \centering 
-  \caption{cross validation results of the NLDE-XGB, NLDE-RF, NLDE-Lasso models, $\mu g/m^3$} 
+\begin{table}[H] \centering 
+  \caption{cross validation results of the XGB, RF, Lasso models using NLDE-avg, $\mu g/m^3$} 
     \label{nlde_vimp} 
 \begin{tabular}{@{\extracolsep{5pt}} cccccccc} 
 \\[-1.8ex]\hline 
@@ -128,29 +147,23 @@ Lasso &	8.51 &	0.42 & 8.67	& 0.49	&6.20 &	0.31	&0.61\\
 \hline \\[-1.8ex] 
 \end{tabular} 
 \end{table} 
+ 
+ \begin{figure}[H]
+    \includegraphics [scale = 0.3 ]{NLDEtrack.png}
+    \label{nldevsbak}
+    \caption { model predictions of NLDE-avg and cargo-bike measurements}
+\end{figure}
 
-\begin{figure}[h!]
-    \includegraphics[width=\linewidth]{w1-1.pdf}
-    \label{accuracy}
-    \caption { Accuracy assessed for NLDE-XGB, NLDE-RF, NLDE-Lasso.}
-  \end{figure}
-  
-\begin{figure}[h!]
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{NLDE.png}
     \label{nldepred}
-    \caption {predictions from NLDE-XGB, NLDE-RF, NLDE-Lasso.}
+    \caption {predictions from XGB,  RF,  Lasso.}
 \end{figure}
 
-\subsection{Compare with bakfiets measurements}
+ 
+The Pearson's correlation between  XGB,  RF, LA  and Bakfiets measurements are respectively 0.24, 0.28, 0.23. The median differences are respectively 34, 23, 23 $\mu g/m^3$. 
 
-
-
-\begin{figure}[h!]
-    \includegraphics [scale = 0.3 ]{NLDE_vs_bak.png}
-    \label{nldevsbak}
-    \caption { The differences between NLDE model predictions and cargo-bike measurements, the values are the subtraction of cargo-bike measurements from NLDE model predictions (model prediction - bike measurements), in ug/m3.}
-\end{figure}
-\subsection{Validation with Cargo-bike measurements}
+ 
 %pearson correlation coefficient`
  %         xgbnij    rfmnij    Lamnij
 %xgbnij 1.0000000 0.7956444 0.7786702
@@ -161,6 +174,20 @@ Lasso &	8.51 &	0.42 & 8.67	& 0.49	&6.20 &	0.31	&0.61\\
 %  xgbnij   rfmnij   Lamnij 
 %32.99156 20.67016 21.43969 
 
+\subsection{Hourly Models}
+This section shows the results of 4 models built respectively for 8-9, 9-10, and 10-11 am 4-day climate, using the NLDE-hr dataset. The results are compared with the cargo-bike measurements at corresponding hours.  
+ 
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{maps.pdf}
+    \label{nldepred}
+    \caption {Maps of cargo-bike measurements and predictions from XGB,  RF,  Lasso.}
+\end{figure}
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{graphs.pdf}
+    \label{nldepred}
+    \caption {1-D cargo-bike measurements and predictions from XGB,  RF,  Lasso.}
+\end{figure}
+
 \subsection{Global model predictions}
 The mean of xgboost, random forest, and Lasso predictions over the area of Nijmegen (called predictions) are respectively 25.77, 22.38, and 26.54 ug/m3. The Nijmegen predictions are shown in figure X. From the figures, the xgboost and random forest predictions reveal more details, they also obtained a higher prediction accuracy (see the global paper) compared to Lasso. Comparing the figure X with the predictors (supplement figure SF2), it can be observed that the predictions reveal primary road patterns. The paired Pearson correlation between three Nijmegen predictions in are: 0.8 for random forest vs. Lasso, 0.81 for random forest vs. xgboost, and 0.94 for Lasso vs. random forest.
 \begin{figure}[h!]
@@ -170,28 +197,57 @@ The mean of xgboost, random forest, and Lasso predictions over the area of Nijme
 \end{figure}
 \subsection{Validation with Cargo-bike measurements}
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{f4.png}
     \label{seperate}
     \caption {Averaged cargo-bike measurements and global model predictions (scaled). a: scale the cargo-bike using the Graafseweg LML station.}
 \end{figure}
 The cargo-bike measurements (the distribution is shown in supplementary figure SF1) show higher NO$_2$ in the west and middle, from points 19 -21, 24 -25, and around point 9 (figure 1, called route 19-21, 24-25, and 9), which align well with predictions from the three global models. However, the spatial variations of the cargo-bike measurements are much smaller compared to the global model predictions. The route 19-21 and route 24-25 are estimated much higher by the global models, most notably random forest.    
-\par
+ 
 Figure X shows averaged cargo-bike measurements and scaled global model predictions at the cargo-bike track. It shows the global model predictions are higher in magnitudes, however, remember the mean of the global model prediction is closer to the mean of the LML ground station measurements. 
-\begin{figure}[h!]
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{f4a.png}
     \label{Graafseweg}
     \caption {scale the cargo-bike using the Graafseweg station. The differences between scaled global model predictions and cargo-bike meausrements, the values are the subtraction of cargo-bike measurements from global model predictions (model prediction - bike measurements), in ug/m3.}
 \end{figure}
-\begin{figure}[h!]
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{f4b.png}
     \label{ruyterstraat}
     \caption {scale the cargo-bike using the ruyterstraat station.}
 \end{figure}
 
-\bibliography{ref.bib}
 \section{Discussion}
+   
+
+\section{Supplement}
+\subsection{Random Forest Algorithm}
+
+\subsection{Xgboost Algorithm}
+
+\subsection{Lasso Algorithm}
+Let \(\beta\) be the target coefficient set of Lasso. \(i\) and \(j\) are the number of samples and the number of independent factors accordingly. The algorithm tries to minimize \(\sum_{i = 1}^N{ (y_i - \sum_j\beta_j x_{ij})^2}\). As a tool, \(\delta_i\) is the tuple that has the form of (\(\pm1, \pm1,\pm1...\pm1\)). Define \( E\) as the equality set of \(\delta_i\) that meets the equality constraint \(\delta_i^T\beta = t\). Lasso parameter \( \mathnormal{t} \) controls the degree of shrinkage. The same paper has described three methods for the solution of  \( \mathnormal{t} \): cross-validation, generalized cross-validation and analytical unbiased estimation of risk. The Lasso algorithm consists of two major steps:
+\par
+\[
+\begin{aligned}
+&(1)\quad E =\{i_0\} \quad \textrm{where}\quad \delta_{i_0}= \textrm{sign} (\beta^0)\textrm{,}\\
+&(2)\quad \textrm{While}\quad \sum\ |\beta_j| > t\textrm{:}\quad\textrm{Add}\quad i \quad \textrm{to the set} \quad E \quad \textrm{where} \quad \delta_i = \textrm{sign}(\beta).\quad \textrm{Find} \quad\beta = \textrm{argmin}(\sum_{i = 1}^N{ (y_i - \sum_j\beta_j x_{ij})^2)}
+\end{aligned}
+\]
+
+
+
+
+
+\newpage
+\bibliographystyle{plainnat}
+\bibliography{ref}
+
 \end{document}
+
 
 https://www.umweltbundesamt.de/en
 http://discomap.eea.europa.eu/Index/
+
+  \subsection{Global NO$_2$ model predictions}
+%The openaq data is used for the global model predictions (see Lu et al. 2020). Three methods are evaluated in this study, namely xgboost, random forest, and Lasso. Based on hyperparameter setting recommendations provided by Lu et al (2020) We used 1000 trees for all the methods. The maximum tree depth for xgboost is set to 6 and learning rate set to 0.02. Other settings are the same as Lu2020. 
+As the global model predictions are for entire year, we scale them to the same time-span as the cargo-bike measurements by multiplying the predictions to the ratio between the global model prediction and the LML measurements averaged over the timespan of the cargo-bike measurements (July 16 -19, 8 am - 11 am), which means after scaling, the mean of the xgboost, random forest, and Lasso predictions are also 23.25 ug/m3 if scaled using the Graafseweg station and 14.03 if scaled using the Ruyterstraat station.
