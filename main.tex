@@ -77,7 +77,7 @@ The cargo-bike covered a route shown in \cref{route}, in Nijmegen, the Netherlan
 
 \subsection{Ground monitor stations used for statistical modelling}
 
-In the Netherlands (41,543 $km^2$), 77 ground stations are established and are managed by the National Institute for Public Health and the Environment \citep[RIVM,][]{RIVMLML}. We further incorporated the ground monitor network from Germany (338 stations 357.386 $km^2$) to better identify NO$_2$-predictors relationships using machine learning models. The ground monitoring station measurements 
+In the Netherlands (41,543 $km^2$), 38 ground stations are established and are managed by the National Institute for Public Health and the Environment \citep[RIVM,][]{RIVMLML}. We further incorporated the ground monitor network from Germany (377 stations 357.386 $km^2$) to better identify NO$_2$-predictors relationships using machine learning models. The ground monitoring station measurements 
 %(all together 418, with three of the measurements on higher altitude and are neglected in this study)
 are from the European Environment Agency \citep{EEA} for the Netherlands and the Umwelt Bundesamt \citep{germansource} for Germany. Three stations with inadequate measurements (i.e. missing values at certain hours) are neglected. The measurements are downloaded for the same days as the cargo-bike measurements and from 7:00 am - 11:59 am.  
 
@@ -125,7 +125,7 @@ The methodological framework is designed as follows:
 \begin{enumerate}
     \item A set of statistical learning methods are applied to model hourly NO$_2$ from official ground station monitors. These statistical learning models are compared.  
     
-    \item Hourly NO$_2$ maps are made with each of the statistical models and are validated on the continuous measurements from the cargo-bike.
+    \item Hourly NO$_2$ are predicted for the study area with each of the statistical models and are validated on the continuous measurements from the cargo-bike.
     
     \item The measurements from the cargo-bike are used to compare predicted patterns from hourly XGB models with different hyper-parameter settings. 
     
@@ -264,7 +264,7 @@ The results of XGB, RF, and Lasso models built respectively for 8-9, 9-10, and 1
  
 
 \subsection{High setting of XGB hyper-parameters}
-As the spatial pattern of XGB can vary greatly with different hyperparameter settings despite the CVGS accuracy remaining the same \citep{luglobal}, and as noises are presented in XGB predictions (\cref{maps}), we evaluated results from multiple XGB hyperparameter settings. We tested increased learning rates of 0.002, 0.001, and 0.0005, and interactions of 300, 3000, and 5000. We also increased the L1 norm (lambda) from 2 to 10, with a step of 2, and gamma \citep{chen2016xgboost} to 5, to further control respectively extreme values at the terminal node and model complexity. With these settings the spatial prediction patterns of XGB, as well as their correlations with cargo-bike measurements change subtly. But, the differences between these settings and the original setting that is optimised by CV is considerably different, while the CVGS accuracy for all these settings remains approximately the same. Here we show the result of XGB with maximum tree depth setting of 5, learning rate 0.002, number of iterations 3000, lambda 2, and gamma 5. We refer to this hyperparameter setting of XGB as "high setting"; compared to the original setting, it searches the gradient much more slowly, correspondingly with more iterations, and uses additional penalties to control model over-fitting. 
+As the spatial pattern of XGB can vary greatly with different hyperparameter settings despite the CVGS accuracy remaining the same \citep{luglobal}, and as noises are presented in XGB predictions (\cref{maps}), we evaluated results from multiple XGB hyperparameter settings. We tested increased learning rates of 0.002, 0.001, and 0.0005, and interactions of 300, 3000, and 5000. We also increased the L1 norm (lambda) from 2 to 10, with a step of 2, and gamma \citep{chen2016xgboost} to 5, to further control respectively extreme values at the terminal node and model complexity. With these settings the spatial prediction patterns of XGB, as well as their correlations with cargo-bike measurements change subtly. But, the differences between these settings and the original setting that is optimised by CV is considerably different, while the CVGS accuracy for all these settings remains approximately the same (\cref{xgbhs_acc}). Here we show the result of XGB with maximum tree depth setting of 5, learning rate 0.002, number of iterations 3000, lambda 2, and gamma 5. We refer to this hyperparameter setting of XGB as "high setting"; compared to the original setting, it searches the gradient much more slowly, correspondingly with more iterations, and uses additional penalties to control model over-fitting. 
 
 With this setting, we clearer road patterns (\cref{xgbhs}) and the similarity between XGB and cargo-bike measurements becomes notably larger compared to the original setting, indicated by the considerable increase in $R^2$ of the linear regression between the XGB prediction and the cargo-bike measurements (\cref{r2bf}). At 9 am, the $R^2$ of the high-setting XGB against cargo-bike measurements XGB is notably higher compared to that of Lasso (0.05) and RF predictions (0.06). Also, the mean values of the high-setting XGB prediction at all the time slots have been reduced and are closer to the cargo-bike measurements (\cref{mean}), most notably at 10 am, where the correlation between the them is also the highest. 
 
@@ -316,6 +316,20 @@ Time &Cargo-bike &XGB & RF & Lasso &XGB hs \\
 \end{tabular} 
 \end{table}   
 
+\begin{table}[!htbp] \centering 
+  \caption{CVGS (Cross Validation on Ground Stations) results of the high setting XGB using NLDE-hr. The unit of RMSE, IQR, and MAE is $\mu g/m^3$.} 
+  \label{xgbhs_acc} 
+\begin{tabular}{@{\extracolsep{5pt}} ccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & RMSE & IQR & MAE & rsq \\ 
+\hline \\[-1.8ex] 
+8 am & $7.7$ & $7.5$ & $5.5$ & $0.71$ \\ 
+9 am & $8.3$ & $7.1$ & $5.6$ & $0.67$ \\ 
+10 am & $8.4$ & $6.8$ & $5.5$ & $0.65$ \\ 
+\hline \\[-1.8ex] 
+\end{tabular} 
+\end{table} 
 
 \section{Discussion}
  
