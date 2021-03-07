@@ -148,10 +148,24 @@ Lasso is a linear regression algorithm that uses an L1 norm to shrink variable c
 
 The variable importance is calculated for XGB and RF. We use the averaged ranking in 20 times bootstrapping for each method \citep{luglobal}. For the XGB the gain scores \citep{chen2016xgboost} are used and for the RF the permutation test is used to calculate the variable importance. 
 
+
 \subsection{RF and XGB hyperparameter optimisation}
 
 The NLDE-avg dataset is used for hyperparameter optimisation, through grid search, with 5-fold CVGS. For XGB, the learning rate (eta), number of iterations (rounds), maximum tree depth (max.tree.depth) and gamma are tuned, each time 70\% of data is drawn from the training set. The search grid for the number of iterations (rounds) was from 200 to 3000, with a step of 200; maximum tree depth (max-depth) from 3 to 6 with a step of 1, learning rate (eta) from 0.001 to 0.1 with a step of 0.05, the penalty term gamma \citep{xgboost} from 1 to 5 with a step of 1. The 5-fold CVGS result indicates the optimal hyperparameters to be eta = 0.051, rounds = 200, max-depth = 3, gamma = 1. For RF, the minimum number of trees on the end nodes (min.node.size), and number of variables that are randomly drawn for each tree (mtry) are optimised. The optimal setting for RF is min.node.size equals 5 and mtry equals 12, the number of trees is set to 1000 for random forest, which is a safe choice as the high number of trees will not negatively affect model performance.
  
+
+
+\subsection{High setting of XGB hyper-parameters}
+As the spatial pattern of XGB can vary greatly with different hyperparameter settings despite the CVGS accuracy remaining the same \citep{luglobal}. We evaluated results from multiple XGB hyperparameter settings. We tested increased learning rates of 0.002, 0.001, and 0.0005, and estimators (i.e. the number of trees) of 300, 3000, and 5000. We found altering the learning rate from 0.002 to 0005 only affect the prediction patterns subtly but setting the learning rate to 0.002 and 0.051 (original setting optimised by CVGS) makes a considerable difference in their predicted NO$_2$ patterns. The CVGS accuracy is optimised at 3000 trees with this new learning rate, which remains approximately the same compared to the original setting (\cref{cv-hr}). We also increased the L1 norm (lambda) from 2 to 10, with a step of 2, and gamma \citep{chen2016xgboost} to 5, to further control respectively extreme values at the terminal node and model complexity. With these settings the spatial prediction patterns of XGB, as well as their correlations with cargo-bike measurements change subtly. We will show the result of XGB with the maximum tree depth setting to 5, learning rate 0.002, number of estimators 3000, lambda 2, and gamma 5. We refer to this hyperparameter setting of XGB as "high setting"; compared to the original setting, it searches the gradient much more slowly, correspondingly with more iterations, and uses additional penalties to control model over-fitting. 
+
+ 
+\subsection{Accuracy assessment}
+
+The RMSE (Root Mean Squared Error) provides general insight into the variance and magnitude of the error. In addition, we calculated the MAE (Mean Absolute Error) for the magnitude of the error and the IQR (Inter-Quartile Range) for the variance of the error. To make the accuracy assessed at different times comparable, we calculated the R-squared ($R^2$). We used 80\% of the dataset for modelling and 20\% for validation. A 20-time bootstrapped Cross-Validation was used. Thus the accuracy metrics described above were calculated on validation datasets 20 times, and the median of each was used as the final accuracy measure.    
+
+
+
+
 
 %%%%%%%%%%% 
 % Results %
@@ -167,7 +181,7 @@ Over the study area, the Pearson's correlation coefficients between XGB and RF p
 The mean predictions ($\mu g/m^3$) along the cargo-bike track are 33.0 for XGB, 20.7 for RF, and 21.4 for Lasso.  The $R^2$ of XGB, RF, Lasso against cargo-bike measurements are respectively 0.06, 0.08, and 0.05, calculated over the predictions at the 25 m cells corresponding to the cargo-bike track. The CVGS (\cref{nlde_cv}) result indicates that RF and XGB have a similar performance, and they both outperform Lasso. In many areas. the XGB model predicted higher values compared to the RF and Lasso predictions and the cargo-bike measurements (\cref{maps}). 
  
 \begin{table}[H] \centering 
-  \caption{Ranking of the top 10 most important variables of XGBoost and Random Forest, using NLDE-avg. Please refer to  \cref{tab:prevar} for the variable description.} 
+  \caption{Ranking of the top 15 most important variables of XGBoost and Random Forest, using NLDE-avg. Please refer to  \cref{tab:prevar} for the variable description.} 
     \label{nlde_vimp} 
 \begin{tabular}{@{\extracolsep{5pt}} ccc} 
 \\[-1.8ex]\hline 
@@ -196,13 +210,13 @@ Rank & XGBoost & Random Forest \\
 \end{table} 
 
 \begin{table}[H] \centering 
-  \caption{CVGS (Cross Validation on Ground Stations) results of the XGB, RF, and Lasso using NLDE-avg. The units of RMSE, IQR, and MAE are $\mu g/m^3$.} 
+  \caption{20 times bootstrapped Cross-Validation results of the XGB, RF, and Lasso using NLDE-avg. The units of RMSE, IQR, and MAE are $\mu g/m^3$.} 
     \label{nlde_cv} 
 \begin{tabular}{@{\extracolsep{5pt}} cccccccc} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
  
-  & RMSE & IQR & MAE & $R^2$ \\ 
+  & RMSE & IQR & MAE & R-squared \\ 
 \hline \\[-1.8ex] 
 XGB & $7.78$ & $6.87$ & $5.36$ & $0.65$ \\ 
 RF & $7.84$ & $6.89$ & $5.40$ & $0.65$ \\ 
@@ -243,29 +257,36 @@ The results of XGB, RF, and Lasso models built respectively for 8-9, 9-10, and 1
  
  As the mean values of the cargo-bike measurements and model predictions are tremendously different (\cref{mean}), we focus on the spatial variations the statistical models could capture. For this, we regressed three model predictions along the cargo-bike track each against the cargo-bike measurements to compare the NO$_2$ variations in the measurements and predictions (\cref{a1d}). The model predictions along the cargo-bike track vary more similarly between each other compared to the variations in the cargo-bike measurements.  The best match between the cargo-bike measurements and the three model predictions occurs at 10 am, with the RF capable of predicting the peak just after pixel 150.  
  
+ With the high-setting XGB, we observe clearer road patterns (\cref{maps}) compared to the original setting of XGB \cref{xgbls} (i.e. XGB with its hyperparameters tuned based on k-fold CV). The similarity between the XGB prediction and the cargo-bike measurements becomes notably higher compared to the original setting, indicated by the considerable increase in $R^2$ of the linear regression between the XGB prediction and the cargo-bike measurements (\cref{r2bf}). At 9 am, the $R^2$ of the high-setting XGB against cargo-bike measurements XGB is notably higher compared to that of Lasso (0.05) and RF predictions (0.06). Also, the mean values of the high-setting XGB prediction at all the time spans have been reduced and are closer to the cargo-bike measurements (\cref{mean}), most notably at 10 am, where the correlation between the them is also the highest. The differences in NO$_2$ magnitudes between the high-setting XGB model predictions and the cargo-bike measurements are shown in \cref{diffxgbhs}. The largest discrepancies between the model prediction and the cargo-bike measurements occur at 9 am. 
+  
+
 \begin{table}[H] \centering 
-  \caption{CVGS (Cross Validation on Ground Stations) results of the XGB (original hyperparameter setting), RF, and Lasso using NLDE-hr. The unit of RMSE, IQR, and MAE is $\mu g/m^3$.} 
+  \caption{20 times bootstrapped Cross-Validation results of the XGBoost (original hyperparameter setting), XGBoost-hs (high-setting XGBoost), Random Forest, and Lasso using NLDE-hr. The units of RMSE, IQR, and MAE are $\mu g/m^3$.} 
     \label{cv-hr} 
-\begin{tabular}{@{\extracolsep{5pt}} ccccc} 
+\begin{tabular}{@{\extracolsep{5pt}} cccccc} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
+ Method &Time  & RMSE & IQR & MAE & R-squared \\ 
+\hline \\[-1.8ex] 
+XGBoost&8 am & $7.5$ & $7.3$ & $5.4$ & $0.73$ \\ 
+&9 am & $8.3$ & $7.0$ & $5.6$ & $0.68$ \\ 
+&10 am & $8.3$ & $6.7$ & $5.4$ & $0.66$ \\ 
+\hline \\[-1.8ex] 
+    
    
-&Time & XGB & RF & Lasso \\ 
+XGBoost-hs & 8 am & $7.5$ & $7.2$ & $5.3$ & $0.73$ \\ 
+&9 am & $8.3$ & $6.7$ & $5.5$ & $0.68$ \\ 
+&10 am & $8.3$ & $6.7$ & $5.4$ & $0.65$ \\ 
+
+ 
  \hline \\[-1.8ex] 
-8 am & RMSE & $7.7$ & $7.6 $ & $15.3$ \\ 
-  &IQR & $7.3$ & $7.4 $ & $11.4 $ \\ 
-  &MAE & $5.5 $ & $5.4 $ & $8.3$ \\ 
-  &$R^2$ & $0.72$ & $0.72 $ & $-3.27$ \\ 
+Random Forest & 8 am & $7.7$ & $7.1$ & $5.5$ & $0.7$ \\ 
+&9 am & $8.3$ & $6.9$ & $5.6$ & $0.68$ \\ 
+&10 am & $8.3$ & $7.3$ & $5.6$ & $0.66$ \\
  \hline \\[-1.8ex] 
- 9 am & RMSE & $8.2$ & $8.4$ & $10.1$ \\ 
- & IQR & $7.0$ & $7.3$ & $11.0$ \\ 
- & MAE & $5.6 $ & $5.7$ & $7.3$ \\ 
- & $R^2$  & $0.68$ & $0.67$ & $0.53$ \\ 
-  \hline \\[-1.8ex] 
-10 am & RMSE & $8.2 $ & $8.5$ & $9.9$ \\
-& IQR & $7.2$ & $7.3$ & $10.0$ \\ 
-&MAE & $5.5$ & $5.6$ & $7.0 $ \\ 
-&$R^2$ & $0.66$ & $0.64$ & $0.51$ \\   
+Lasso &8 am & $9.4$ & $10.8$ & $7.1$ & $0.58$ \\ 
+&9 am & $9.9$ & $10.1$ & $7.0$ & $0.54$ \\ 
+&10 am & $9.9$ & $9.5$ & $7.0$ & $0.51$ \\ 
 \hline \\[-1.8ex] 
 \end{tabular} 
 \end{table} 
@@ -279,6 +300,13 @@ The results of XGB, RF, and Lasso models built respectively for 8-9, 9-10, and 1
 \end{figure}
 
 \begin{figure}[H]
+    \includegraphics[width=\linewidth, trim=1cm 4cm 0cm 1cm, clip=true]{xgbhs.pdf}
+    
+    \caption {Spatial predictions ($\mu g/m^3$) of XGBoost for different hours using the k-fold CV-based hyperprarmeter tunning (learning rate: 0.05, number of iterations: 200).  }
+    \label{xgbls}
+\end{figure}
+
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{graphs.pdf}
     
     \caption {Cargo-bike measurements and the fitted values of a linear regression between respectively the XGB,  RF, Lasso predictions and the cargo-bike measurements, visualised in the 1-D view. The pixel\_id on the x-axis refers to the position on the track followed by the cargo bike.}
@@ -287,48 +315,13 @@ The results of XGB, RF, and Lasso models built respectively for 8-9, 9-10, and 1
 
  
 
-\subsection{High setting of XGB hyper-parameters}
-As the spatial pattern of XGB can vary greatly with different hyperparameter settings despite the CVGS accuracy remaining the same \citep{luglobal}. We evaluated results from multiple XGB hyperparameter settings. We tested increased learning rates of 0.002, 0.001, and 0.0005, and estimators (i.e. the number of trees) of 300, 3000, and 5000. We found altering the learning rate from 0.002 to 0005 only affect the prediction patterns subtly but setting the learning rate to 0.002 and 0.051 (original setting optimised by CVGS) makes a considerable difference in their predicted NO$_2$ patterns. The CVGS accuracy is optimised at 3000 trees with this new learning rate, which remains approximately the same compared to the original setting (\cref{xgbhs_acc} and \cref{cv-hr}). We also increased the L1 norm (lambda) from 2 to 10, with a step of 2, and gamma \citep{chen2016xgboost} to 5, to further control respectively extreme values at the terminal node and model complexity. With these settings the spatial prediction patterns of XGB, as well as their correlations with cargo-bike measurements change subtly.  Here we show the result of XGB with the maximum tree depth setting to 5, learning rate 0.002, number of estimators 3000, lambda 2, and gamma 5 (\cref{xgbhs_acc}). We refer to this hyperparameter setting of XGB as "high setting"; compared to the original setting, it searches the gradient much more slowly, correspondingly with more iterations, and uses additional penalties to control model over-fitting. 
-
-With this setting, we observe clearer road patterns (\cref{xgbhs}) and the similarity between XGB and cargo-bike measurements becomes notably higher compared to the original setting, indicated by the considerable increase in $R^2$ of the linear regression between the XGB prediction and the cargo-bike measurements (\cref{r2bf}). At 9 am, the $R^2$ of the high-setting XGB against cargo-bike measurements XGB is notably higher compared to that of Lasso (0.05) and RF predictions (0.06). Also, the mean values of the high-setting XGB prediction at all the time spans have been reduced and are closer to the cargo-bike measurements (\cref{mean}), most notably at 10 am, where the correlation between the them is also the highest. The differences in NO$_2$ magnitudes between the high-setting XGB model predictions and the cargo-bike measurements are shown in \cref{diffxgbhs}. The largest discrepancies between the model prediction and the cargo-bike measurements occur at 9 am. 
-
-
-\begin{figure}[H]
-    \includegraphics[width=\linewidth, trim=1cm 4cm 0cm 1cm, clip=true]{xgbhs.pdf}
-    
-    \caption {Spatial predictions ($\mu g/m^3$) using the high-setting for different hours.  }
-    \label{xgbhs}
-\end{figure}
-
 \begin{figure}[H]
     \includegraphics[width=\linewidth, trim=1cm 4cm 0cm 1cm, clip=true]{diffsgbhs.pdf}
     
     \caption {Differences in NO$_2$ ($\mu g/m^3$) between the high-setting XGB model predictions and the cargo-bike measurements (cargo-bike measurements \textit{minus} the model prediction), at different hours. }
     \label{diffxgbhs}
 \end{figure}
-
-\begin{figure}[H]
-    \includegraphics[scale = 0.5]{xgb_hs_1d.pdf}
-    
-    \caption {Cargo-bike measurements and predictions from high-setting XGB models at different hours, visualised in 1-D.  }
-    \label{xgbhs1d}
-\end{figure}
-
-
-\begin{table}[!h] \centering 
-  \caption{CVGS (Cross Validation on Ground Stations) results of the high setting XGB using NLDE-hr. The unit of RMSE, IQR, and MAE is $\mu g/m^3$.} 
-  \label{xgbhs_acc} 
-\begin{tabular}{@{\extracolsep{5pt}} ccccc} 
-\\[-1.8ex]\hline 
-\hline \\[-1.8ex] 
- & RMSE & IQR & MAE & rsq \\ 
-\hline \\[-1.8ex] 
-8 am & $7.7$ & $7.5$ & $5.5$ & $0.71$ \\ 
-9 am & $8.3$ & $7.1$ & $5.6$ & $0.67$ \\ 
-10 am & $8.4$ & $6.8$ & $5.5$ & $0.65$ \\ 
-\hline \\[-1.8ex] 
-\end{tabular} 
-\end{table} 
+ 
 
 \begin{table}[H] \centering 
   \caption{$R^2$ between each XGB, RF, Lasso, high setting of XGB (XGB hs) and cargo-bike measurements.} 
